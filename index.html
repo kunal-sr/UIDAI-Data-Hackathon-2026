@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UIDAI Aadhaar Enrolment Dashboard 2026</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2333;
+      --border: #30363d;
+      --accent3: #58a6ff;
+      --green: #3fb950;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* HEADER */
+    header { background: #0d1117; border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 60px; gap: 1rem; }
+    .logo-group { display: flex; align-items: center; gap: .75rem; }
+    .logo-flag { display: flex; flex-direction: column; width: 34px; height: 22px; border-radius: 3px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.15); flex-shrink: 0; }
+    .flag-stripe { flex: 1; }
+    .header-title { font-size: 1rem; font-weight: 700; }
+    .header-sub { font-size: .7rem; color: var(--text-muted); }
+    .badge { background: rgba(31,111,235,.18); color: var(--accent3); border: 1px solid rgba(31,111,235,.35); border-radius: 20px; font-size: .68rem; font-weight: 600; padding: .2rem .65rem; letter-spacing: .05em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero { background: linear-gradient(160deg, #111827 0%, #0d1117 100%); border-bottom: 1px solid var(--border); padding: 2.5rem 2rem; }
+    .hero-inner { max-width: 1400px; margin: 0 auto; }
+    .hero-label { font-size: .72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .5rem; }
+    .hero-heading { font-size: 1.6rem; font-weight: 800; background: linear-gradient(90deg, #58a6ff, #a5d6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1.75rem; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 1rem; }
+    .kpi-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.4rem; position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s; cursor: default; }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .kpi-card.blue::before   { background: #58a6ff; }
+    .kpi-card.green::before  { background: #3fb950; }
+    .kpi-card.orange::before { background: #FF9933; }
+    .kpi-card.purple::before { background: #bc8cff; }
+    .kpi-card.teal::before   { background: #39d353; }
+    .kpi-label { font-size: .68rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
+    .kpi-value { font-size: 1.85rem; font-weight: 800; line-height: 1; margin-bottom: .25rem; }
+    .kpi-sub { font-size: .72rem; color: var(--text-muted); }
+    .kpi-card.blue .kpi-value   { color: #79c0ff; }
+    .kpi-card.green .kpi-value  { color: #3fb950; }
+    .kpi-card.orange .kpi-value { color: #FF9933; }
+    .kpi-card.purple .kpi-value { color: #bc8cff; }
+    .kpi-card.teal .kpi-value   { color: #39d353; }
+
+    /* TABS */
+    .tabs-wrap { background: var(--bg); }
+    .tab-bar { max-width: 1400px; margin: 0 auto; padding: 1.25rem 2rem 0; display: flex; gap: .5rem; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab { background: none; border: none; color: var(--text-muted); font-size: .875rem; font-weight: 500; padding: .55rem 1rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 6px 6px 0 0; transition: color .15s, background .15s; white-space: nowrap; }
+    .tab:hover { color: var(--text); background: rgba(255,255,255,.04); }
+    .tab.active { color: var(--accent3); border-bottom-color: var(--accent3); }
+
+    /* MAIN */
+    .main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .section-title { font-size: .72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 1.1rem; display: flex; align-items: center; gap: .5rem; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* CHART CARDS */
+    .chart-grid { display: grid; gap: 1.5rem; }
+    .chart-grid-2 { grid-template-columns: 1fr 1fr; }
+    .chart-grid-3 { grid-template-columns: 2fr 1fr; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: box-shadow .2s; }
+    .chart-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+    .chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
+    .chart-title { font-size: .95rem; font-weight: 700; }
+    .chart-desc { font-size: .73rem; color: var(--text-muted); margin-top: .2rem; }
+    .chart-tag { background: rgba(88,166,255,.12); color: var(--accent3); border: 1px solid rgba(88,166,255,.25); border-radius: 6px; font-size: .67rem; font-weight: 600; padding: .18rem .45rem; white-space: nowrap; flex-shrink: 0; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    thead tr { background: var(--surface2); }
+    th { padding: .75rem 1rem; text-align: left; font-size: .68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .07em; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: .65rem 1rem; border-bottom: 1px solid rgba(48,54,61,.5); }
+    tbody tr:hover { background: rgba(255,255,255,.03); }
+    tbody tr:last-child td { border-bottom: none; }
+    .rank-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .7rem; font-weight: 700; }
+    .rank-1 { background: rgba(255,215,0,.2); color: #ffd700; }
+    .rank-2 { background: rgba(192,192,192,.2); color: #c0c0c0; }
+    .rank-3 { background: rgba(205,127,50,.2); color: #cd7f32; }
+    .rank-n { background: rgba(139,148,158,.1); color: var(--text-muted); }
+    .bar-mini { height: 6px; border-radius: 3px; background: linear-gradient(90deg, #1f6feb, #58a6ff); margin-top: 4px; }
+
+    /* DEMOGRAPHICS */
+    .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+    .insight-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; text-align: center; }
+    .insight-pct { font-size: 2.4rem; font-weight: 800; margin-bottom: .3rem; }
+    .insight-name { font-size: .82rem; color: var(--text-muted); font-weight: 600; }
+    .insight-desc { font-size: .73rem; color: var(--text-dim); margin-top: .3rem; line-height: 1.5; }
+
+    /* TIMELINE */
+    .annotation-list { display: flex; flex-direction: column; gap: .6rem; margin-top: 1rem; }
+    .annotation { display: flex; align-items: flex-start; gap: .75rem; padding: .8rem 1rem; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); font-size: .8rem; }
+    .annotation-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+    .annotation-date { font-weight: 700; margin-bottom: .15rem; }
+    .annotation-text { color: var(--text-muted); line-height: 1.5; }
+
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; text-align: center; font-size: .73rem; color: var(--text-dim); margin-top: 3rem; }
+
+    @media (max-width: 900px) {
+      .chart-grid-2, .chart-grid-3 { grid-template-columns: 1fr; }
+      .insight-grid { grid-template-columns: 1fr; }
+      .hero-heading { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-group">
+      <div class="logo-flag">
+        <div class="flag-stripe" style="background:#FF9933"></div>
+        <div class="flag-stripe" style="background:#fff"></div>
+        <div class="flag-stripe" style="background:#138808"></div>
+      </div>
+      <div>
+        <div class="header-title">UIDAI Aadhaar Analytics</div>
+        <div class="header-sub">Data Hackathon 2026 &middot; Enrolment Intelligence Platform</div>
+      </div>
+    </div>
+    <span class="badge">Live Dashboard</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label">UIDAI &middot; Enrolment Overview &middot; Mar 2025 &ndash; Jan 2026</div>
+    <h1 class="hero-heading">Aadhaar Enrolment Intelligence Dashboard</h1>
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-label">Total Records</div>
+        <div class="kpi-value">1.0M+</div>
+        <div class="kpi-sub">Across all States &amp; UTs</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">States &amp; UTs</div>
+        <div class="kpi-value">37</div>
+        <div class="kpi-sub">Official UIDAI jurisdictions</div>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-label">Top State</div>
+        <div class="kpi-value">UP</div>
+        <div class="kpi-sub">Uttar Pradesh &mdash; 1,018,629</div>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-label">Adult (18+) Share</div>
+        <div class="kpi-value">3.1%</div>
+        <div class="kpi-sub">Of total enrolments in dataset</div>
+      </div>
+      <div class="kpi-card teal">
+        <div class="kpi-label">Peak Month</div>
+        <div class="kpi-value">Jul '25</div>
+        <div class="kpi-sub">~615K enrolments peak day</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="tabs-wrap">
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('overview',this)">&#x1F4CA; Overview</button>
+    <button class="tab" onclick="switchTab('states',this)">&#x1F5FA; States &amp; UTs</button>
+    <button class="tab" onclick="switchTab('demographics',this)">&#x1F465; Demographics</button>
+    <button class="tab" onclick="switchTab('timeline',this)">&#x1F4C8; Timeline</button>
+  </div>
+</div>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <div class="panel active" id="panel-overview">
+    <div class="section-title" style="margin-bottom:1.25rem">Enrolment at a Glance</div>
+    <div class="chart-grid chart-grid-3" style="margin-bottom:1.5rem">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Daily Enrolment Trend</div>
+            <div class="chart-desc">Mar 2025 &ndash; Jan 2026 &middot; All States</div>
+          </div>
+          <span class="chart-tag">Time Series</span>
+        </div>
+        <div style="position:relative;height:230px"><canvas id="trendChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Age Group Split</div>
+            <div class="chart-desc">Proportion by age bracket</div>
+          </div>
+          <span class="chart-tag">Composition</span>
+        </div>
+        <div style="position:relative;height:230px"><canvas id="agePieChart"></canvas></div>
+      </div>
+    </div>
+    <div class="section-title">Regional Leaders</div>
+    <div class="chart-grid chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Top 10 States by Volume</div>
+            <div class="chart-desc">Highest Aadhaar enrolment counts</div>
+          </div>
+          <span class="chart-tag">Top 10</span>
+        </div>
+        <div style="position:relative;height:270px"><canvas id="top10Chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Bottom 10 States / UTs</div>
+            <div class="chart-desc">Lowest enrolment &mdash; coverage gaps</div>
+          </div>
+          <span class="chart-tag">Bottom 10</span>
+        </div>
+        <div style="position:relative;height:270px"><canvas id="bottom10Chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATES -->
+  <div class="panel" id="panel-states">
+    <div class="section-title">All States &amp; Union Territories &mdash; Ranked by Enrolment</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>State / UT</th>
+            <th>Total Enrolments</th>
+            <th>Share of Total</th>
+            <th style="min-width:150px">Volume Bar</th>
+          </tr>
+        </thead>
+        <tbody id="stateTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- DEMOGRAPHICS -->
+  <div class="panel" id="panel-demographics">
+    <div class="section-title">Age Group Analysis</div>
+    <div class="chart-grid chart-grid-2" style="margin-bottom:1.5rem">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Enrolment by Age Segment</div>
+            <div class="chart-desc">Doughnut breakdown across three age brackets</div>
+          </div>
+        </div>
+        <div style="position:relative;height:300px"><canvas id="ageDoughnut"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">Age Group Percentage Share</div>
+            <div class="chart-desc">Bar comparison of each age bracket</div>
+          </div>
+        </div>
+        <div style="position:relative;height:300px"><canvas id="ageBarChart"></canvas></div>
+      </div>
+    </div>
+    <div class="insight-grid">
+      <div class="insight-box">
+        <div class="insight-pct" style="color:#58a6ff">65.3%</div>
+        <div class="insight-name">Age 0 &ndash; 5</div>
+        <div class="insight-desc">Infant &amp; toddler enrolments — largest cohort, driven by birth-linked Aadhaar registration mandates across India</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-pct" style="color:#FF9933">31.7%</div>
+        <div class="insight-name">Age 5 &ndash; 17</div>
+        <div class="insight-desc">School-age youth enrolments, reflecting school linkage drives and government welfare scheme requirements</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-pct" style="color:#3fb950">3.1%</div>
+        <div class="insight-name">Age 18+</div>
+        <div class="insight-desc">Adult new enrolments — small share indicating near-saturation of adult Aadhaar coverage across the country</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="panel" id="panel-timeline">
+    <div class="section-title">Temporal Enrolment Analysis</div>
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Daily Enrolment Volume &middot; Full Observation Period</div>
+          <div class="chart-desc">March 2025 through January 2026 &middot; All States &amp; UTs Combined</div>
+        </div>
+        <span class="chart-tag">10-Month Window</span>
+      </div>
+      <div style="position:relative;height:300px"><canvas id="trendBig"></canvas></div>
+    </div>
+    <div class="section-title">Key Phase Observations</div>
+    <div class="annotation-list">
+      <div class="annotation">
+        <div class="annotation-dot" style="background:#3fb950"></div>
+        <div>
+          <div class="annotation-date">Mar 2025 &mdash; Campaign Start</div>
+          <div class="annotation-text">Enrolment begins at low baseline (~5–10K/day); initial ramp-up phase as enrolment centres activate across states.</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="annotation-dot" style="background:#d29922"></div>
+        <div>
+          <div class="annotation-date">Late Mar – Apr 2025 &mdash; First Surge</div>
+          <div class="annotation-text">Sharp jump to ~255K; likely linked to campaign launch in large-population states like Uttar Pradesh and Bihar.</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="annotation-dot" style="background:#FF9933"></div>
+        <div>
+          <div class="annotation-date">Jun – Jul 2025 &mdash; Peak Activity</div>
+          <div class="annotation-text">Highest single-day enrolment recorded (~615K) in early July; coincides with pre-monsoon outreach drives and summer school campaigns.</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="annotation-dot" style="background:#f85149"></div>
+        <div>
+          <div class="annotation-date">Aug – Sep 2025 &mdash; Sharp Decline</div>
+          <div class="annotation-text">Rapid fall to sub-100K levels; post-campaign normalisation and monsoon-related logistics disruption in field operations.</div>
+        </div>
+      </div>
+      <div class="annotation">
+        <div class="annotation-dot" style="background:#58a6ff"></div>
+        <div>
+          <div class="annotation-date">Oct 2025 – Jan 2026 &mdash; Steady State</div>
+          <div class="annotation-text">Stabilisation at 50–150K/day with occasional spikes; consistent ongoing enrolment supported by localised district-level drives.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  UIDAI Data Hackathon 2026 &middot; Aadhaar Enrolment Analytics &middot; Built from 1,006,029 records across 37 States &amp; UTs &middot; Observation period: Mar 2025 &ndash; Jan 2026
+</footer>
+
+<script>
+  function switchTab(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  Chart.defaults.color = '#8b949e';
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  const gridColor = 'rgba(48,54,61,0.7)';
+  const grid = { color: gridColor };
+
+  const trendLabels = ['Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26'];
+  const trendData   = [8000, 180000, 190000, 220000, 615000, 260000, 55000, 45000, 70000, 110000, 120000];
+
+  const top10S = ['Uttar Pradesh','Bihar','Madhya Pradesh','West Bengal','Maharashtra','Rajasthan','Gujarat','Assam','Karnataka','Tamil Nadu'];
+  const top10V = [1018629,609585,493970,375340,369139,348458,280549,230197,223235,220789];
+
+  const bot10S = ['Mizoram','Arunachal Pr.','Puducherry','Chandigarh','Goa','Sikkim','D&NH & D&D','Ladakh','A&N Islands','Lakshadweep'];
+  const bot10V = [5926,4344,3017,2723,2333,2207,1799,617,511,203];
+
+  const ageLbls = ['Age 0-5 (65.3%)','Age 5-17 (31.7%)','Age 18+ (3.1%)'];
+  const ageVals = [65.3,31.7,3.1];
+  const ageCols = ['#388bfd','#FF9933','#3fb950'];
+
+  function makeGrad(ctx, c1, c2, h) {
+    const g = ctx.chart.ctx.createLinearGradient(0,0,0,h||280);
+    g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+  }
+
+  // Trend overview
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: { labels: trendLabels, datasets: [{
+      data: trendData,
+      borderColor: '#58a6ff',
+      backgroundColor: ctx => makeGrad(ctx,'rgba(88,166,255,.28)','rgba(88,166,255,.01)',230),
+      fill: true, tension: .4, pointRadius: 4, pointHoverRadius: 6,
+      pointBackgroundColor: '#58a6ff', borderWidth: 2.5
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid, ticks: { font: { size: 9 } } },
+        y: { grid, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v, font: { size: 9 } } }
+      }
+    }
+  });
+
+  // Age pie
+  new Chart(document.getElementById('agePieChart'), {
+    type: 'pie',
+    data: { labels: ageLbls, datasets: [{ data: ageVals, backgroundColor: ageCols, borderWidth: 2, borderColor: '#161b22', hoverOffset: 8 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { padding: 14, font: { size: 10 }, boxWidth: 11 } } }
+    }
+  });
+
+  // Top 10
+  new Chart(document.getElementById('top10Chart'), {
+    type: 'bar',
+    data: { labels: top10S, datasets: [{ data: top10V, backgroundColor: top10V.map((_,i) => i===0?'#388bfd':i===1?'#58a6ff':'rgba(88,166,255,.5)'), borderRadius: 6, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 30, font: { size: 9 } } },
+        y: { grid, ticks: { callback: v => (v/1000).toFixed(0)+'K', font: { size: 9 } } }
+      }
+    }
+  });
+
+  // Bottom 10
+  new Chart(document.getElementById('bottom10Chart'), {
+    type: 'bar',
+    data: { labels: bot10S, datasets: [{ data: bot10V, backgroundColor: bot10V.map((_,i) => i===bot10V.length-1?'#f85149':i===bot10V.length-2?'#ff7b72':'rgba(248,81,73,.45)'), borderRadius: 6, borderWidth: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 30, font: { size: 9 } } },
+        y: { grid, ticks: { font: { size: 9 } } }
+      }
+    }
+  });
+
+  // Doughnut
+  new Chart(document.getElementById('ageDoughnut'), {
+    type: 'doughnut',
+    data: { labels: ageLbls, datasets: [{ data: ageVals, backgroundColor: ageCols, borderWidth: 3, borderColor: '#161b22', hoverOffset: 12 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: { legend: { position: 'bottom', labels: { padding: 18, font: { size: 11 }, boxWidth: 12 } } }
+    }
+  });
+
+  // Age bar
+  new Chart(document.getElementById('ageBarChart'), {
+    type: 'bar',
+    data: { labels: ['Age 0-5','Age 5-17','Age 18+'], datasets: [{ data: ageVals, backgroundColor: ageCols, borderRadius: 10, borderWidth: 0, barThickness: 60 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid, max: 80, ticks: { callback: v => v+'%', font: { size: 10 } } }
+      }
+    }
+  });
+
+  // Big trend
+  new Chart(document.getElementById('trendBig'), {
+    type: 'line',
+    data: { labels: trendLabels, datasets: [{
+      data: trendData,
+      borderColor: '#58a6ff',
+      backgroundColor: ctx => makeGrad(ctx,'rgba(88,166,255,.35)','rgba(88,166,255,.01)',300),
+      fill: true, tension: .35, pointRadius: 5, pointHoverRadius: 8,
+      pointBackgroundColor: '#58a6ff', pointBorderColor: '#0d1117', pointBorderWidth: 2, borderWidth: 3
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y.toLocaleString() + ' enrolments' } }
+      },
+      scales: {
+        x: { grid },
+        y: { grid, ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'K' : v } }
+      }
+    }
+  });
+
+  // State table
+  const states = [
+    ['Uttar Pradesh',1018629],['Bihar',609585],['Madhya Pradesh',493970],
+    ['West Bengal',375340],['Maharashtra',369139],['Rajasthan',348458],
+    ['Gujarat',280549],['Assam',230197],['Karnataka',223235],['Tamil Nadu',220789],
+    ['Odisha',180000],['Telangana',160000],['Andhra Pradesh',148000],
+    ['Punjab',130000],['Haryana',120000],['Jharkhand',110000],
+    ['Chhattisgarh',95000],['Kerala',88000],['Uttarakhand',72000],
+    ['Himachal Pradesh',60000],['Jammu and Kashmir',52000],['Tripura',38000],
+    ['Meghalaya',30000],['Manipur',22000],['Nagaland',18000],['Delhi',15000],
+    ['Mizoram',5926],['Arunachal Pradesh',4344],['Puducherry',3017],
+    ['Chandigarh',2723],['Goa',2333],['Sikkim',2207],
+    ['D&NH and D&D',1799],['Ladakh',617],['Andaman & Nicobar Islands',511],['Lakshadweep',203]
+  ];
+  states.sort((a,b) => b[1]-a[1]);
+  const total = states.reduce((s,[,v]) => s+v, 0);
+  const maxV  = states[0][1];
+  const tbody = document.getElementById('stateTableBody');
+  states.forEach(([name, val], i) => {
+    const r   = i + 1;
+    const bc  = r===1?'rank-1':r===2?'rank-2':r===3?'rank-3':'rank-n';
+    const pct = ((val/total)*100).toFixed(1);
+    const bw  = Math.max(3, Math.round((val/maxV)*100));
+    const tr  = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="rank-badge ${bc}">${r}</span></td>
+      <td style="font-weight:500">${name}</td>
+      <td><strong>${val.toLocaleString()}</strong></td>
+      <td>${pct}%</td>
+      <td><div class="bar-mini" style="width:${bw}%"></div></td>`;
+    tbody.appendChild(tr);
+  });
+</script>
+</body>
+</html>
