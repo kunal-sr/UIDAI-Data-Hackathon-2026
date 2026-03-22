@@ -28,6 +28,8 @@ This project demonstrates how large public administrative datasets can be system
 
 **[UIDAT HACKATHON](https://uidai-data-hackathon-2026-zeta.vercel.app/)**
 
+---
+
 ## 🎯 Project Objectives
 
 The primary goals of this analysis are:
